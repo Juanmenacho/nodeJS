@@ -1,12 +1,12 @@
 {
-  "name": "node-web-scrape",
+  "name": "menaTorrentDown",
   "version": "0.0.1",
-  "description": "Scrape le web.",
+  "description": "ola ke ase",
   "main": "server.js",
-  "author": "Scotch",
+  "author": "Menacho",
   "repository": {
     "type": "git",
-    "url": "https://github.com/scotch-io/node-web-scraper"
+    "url": "https://github.com/Juanmenacho/nodeJS"
   },
   "dependencies": {
     "express": "latest",
