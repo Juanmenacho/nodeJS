@@ -2,11 +2,14 @@
 var express = require('express'),
     app     = express(),
     morgan  = require('morgan');
-    
+var cheerio = require('cheerio');
+var request = require('request');
+
 Object.assign=require('object-assign')
 
 app.engine('html', require('ejs').renderFile);
 app.use(morgan('combined'))
+app.use(express.static('views'));
 
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
@@ -59,6 +62,7 @@ var initDb = function(callback) {
 app.get('/', function (req, res) {
   // try to initialize the db on every request if it's not already
   // initialized.
+  //TU PUTA MADRE
   if (!db) {
     initDb(function(err){});
   }
@@ -78,8 +82,12 @@ app.get('/', function (req, res) {
 });
 
 app.get('/pagecount', function (req, res) {
+
   // try to initialize the db on every request if it's not already
   // initialized.
+  
+  parseCombos();
+  
   if (!db) {
     initDb(function(err){});
   }
@@ -96,7 +104,47 @@ app.get('/pagecount', function (req, res) {
 app.use(function(err, req, res, next){
   console.error(err.stack);
   res.status(500).send('Something bad happened!');
+
 });
+
+function parseCombos(){
+
+	 url = 'http://www.imdb.com/title/tt1229340/';
+
+	 request(url, function(error, response, html){
+        if(!error){
+            var $ = cheerio.load(html);
+
+            var title, release, rating;
+            var json = { title : "", release : "", rating : ""};
+
+            $('.header').filter(function(){
+                var data = $(this);
+                title = data.children().first().text();
+
+                release = data.children().last().children().text();
+
+                json.title = title;
+                json.release = release;
+            })
+
+            // Since the rating is in a different section of the DOM, we'll have to write a new jQuery filter to extract this information.
+
+            $('.star-box-giga-star').filter(function(){
+                var data = $(this);
+
+                // The .star-box-giga-star class was exactly where we wanted it to be.
+                // To get the rating, we can simply just get the .text(), no need to traverse the DOM any further
+
+                rating = data.text();
+
+                json.rating = rating;
+            })
+        }
+    })
+
+
+}
 
 initDb(function(err){
   console.log('Error connecting to Mongo. Message:\n'+err);
